@@ -182,7 +182,7 @@ func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *
 		notVerboseBuffer = bytes.NewBuffer(nil)
 		version          = httputils.VersionFromContext(ctx)
 	)
-
+	logrus.Errorf("postBuild called!!!")
 	w.Header().Set("Content-Type", "application/json")
 
 	output := ioutils.NewWriteFlusher(w)

@@ -77,6 +77,7 @@ func NewBuildManager(b builder.Backend, sg SessionGetter, fsCache *fscache.FSCac
 // Build starts a new build from a BuildConfig
 func (bm *BuildManager) Build(ctx context.Context, config backend.BuildConfig) (*builder.Result, error) {
 	buildsTriggered.Inc()
+	logrus.Errorf("Dockerfile Build called!!!")
 	if config.Options.Dockerfile == "" {
 		config.Options.Dockerfile = builder.DefaultDockerfileName
 	}
@@ -122,6 +123,7 @@ func (bm *BuildManager) Build(ctx context.Context, config backend.BuildConfig) (
 		PathCache:      bm.pathCache,
 		IDMappings:     bm.idMappings,
 	}
+	logrus.Errorf("Dockerfile Build finished!!!")
 	return newBuilder(ctx, builderOptions, os).build(source, dockerfile)
 }
 
@@ -218,6 +220,7 @@ func newBuilder(clientCtx context.Context, options builderOptions, os string) *B
 func (b *Builder) build(source builder.Source, dockerfile *parser.Result) (*builder.Result, error) {
 	defer b.imageSources.Unmount()
 
+	logrus.Errorf("Dockerfile internal build called!!!")
 	addNodesForLabelOption(dockerfile.AST, b.options.Labels)
 
 	stages, metaArgs, err := instructions.Parse(dockerfile.AST)
@@ -245,6 +248,7 @@ func (b *Builder) build(source builder.Source, dockerfile *parser.Result) (*buil
 		buildsFailed.WithValues(metricsDockerfileEmptyError).Inc()
 		return nil, errors.New("No image was generated. Is your Dockerfile empty?")
 	}
+	logrus.Errorf("Dockerfile internal build finished!!!")
 	return &builder.Result{ImageID: dispatchState.imageID, FromImage: dispatchState.baseImage}, nil
 }
 

@@ -23,7 +23,7 @@ func (cli *Client) ImageBuild(ctx context.Context, buildContext io.Reader, optio
 	if err != nil {
 		return types.ImageBuildResponse{}, err
 	}
-
+	logrus.Errorf("Client Image Build called!!!")
 	headers := http.Header(make(map[string][]string))
 	buf, err := json.Marshal(options.AuthConfigs)
 	if err != nil {
@@ -46,6 +46,7 @@ func (cli *Client) ImageBuild(ctx context.Context, buildContext io.Reader, optio
 
 	osType := getDockerOS(serverResp.header.Get("Server"))
 
+	logrus.Errorf("Client Image Build finished!!!")
 	return types.ImageBuildResponse{
 		Body:   serverResp.body,
 		OSType: osType,

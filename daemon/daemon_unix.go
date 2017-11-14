@@ -120,8 +120,9 @@ func getCPUResources(config containertypes.Resources) (*specs.LinuxCPU, error) {
 		shares := uint64(config.CPUShares)
 		cpu.Shares = &shares
 	}
-
+	logrus.Errorf("in daemon's getCPUResources!!!")
 	if config.CpusetCpus != "" {
+		logrus.Errorf("cpuset is not null!!!")
 		cpu.Cpus = config.CpusetCpus
 	}
 
@@ -508,7 +509,9 @@ func verifyContainerResources(resources *containertypes.Resources, sysInfo *sysi
 		logrus.Warn("Your kernel does not support Block I/O weight_device or the cgroup is not mounted. Weight-device discarded.")
 		resources.BlkioWeightDevice = []*pblkiodev.WeightDevice{}
 	}
+	logrus.Errorf("About to check DeviceReadBps CpusetCpus: %s", resources.CpusetCpus)
 	if len(resources.BlkioDeviceReadBps) > 0 && !sysInfo.BlkioReadBpsDevice {
+		logrus.Errorf("checking DeviceReadBps")
 		warnings = append(warnings, "Your kernel does not support BPS Block I/O read limit or the cgroup is not mounted. Block I/O BPS read limit discarded.")
 		logrus.Warn("Your kernel does not support BPS Block I/O read limit or the cgroup is not mounted. Block I/O BPS read limit discarded")
 		resources.BlkioDeviceReadBps = []*pblkiodev.ThrottleDevice{}
