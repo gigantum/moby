@@ -224,6 +224,7 @@ func (b *Builder) build(source builder.Source, dockerfile *parser.Result) (*buil
 	addNodesForLabelOption(dockerfile.AST, b.options.Labels)
 
 	stages, metaArgs, err := instructions.Parse(dockerfile.AST)
+	logrus.Errorf("Dockerfile Parse finished!!!")
 	if err != nil {
 		if instructions.IsUnknownInstruction(err) {
 			buildsFailed.WithValues(metricsUnknownInstructionError).Inc()
@@ -279,7 +280,12 @@ func printCommand(out io.Writer, currentCommandIndex int, totalCommands int, cmd
 }
 
 func (b *Builder) dispatchDockerfileWithCancellation(parseResult []instructions.Stage, metaArgs []instructions.ArgCommand, escapeToken rune, source builder.Source) (*dispatchState, error) {
+	logrus.Errorf("dispatchDockerfileWithCancellation called!!!")
 	dispatchRequest := dispatchRequest{}
+	logrus.Errorf("BuildArgs are: ")
+	for key, value := range b.options.BuildArgs {
+    logrus.Errorf("Key: %s", key, "Value: %s", value)
+	}
 	buildArgs := newBuildArgs(b.options.BuildArgs)
 	totalCommands := len(metaArgs) + len(parseResult)
 	currentCommandIndex := 1
@@ -323,9 +329,11 @@ func (b *Builder) dispatchDockerfileWithCancellation(parseResult []instructions.
 
 			currentCommandIndex = printCommand(b.Stdout, currentCommandIndex, totalCommands, cmd)
 
+			logrus.Errorf("dispatchDockerfileWithCancellation about to dispatch!!!")
 			if err := dispatch(dispatchRequest, cmd); err != nil {
 				return nil, err
 			}
+			logrus.Errorf("dispatchDockerfileWithCancellation returned from dispatch!!!")
 			dispatchRequest.state.updateRunConfig()
 			fmt.Fprintf(b.Stdout, " ---> %s\n", stringid.TruncateID(dispatchRequest.state.imageID))
 
@@ -339,6 +347,7 @@ func (b *Builder) dispatchDockerfileWithCancellation(parseResult []instructions.
 		}
 	}
 	buildArgs.WarnOnUnusedBuildArgs(b.Stdout)
+	logrus.Errorf("dispatchDockerfileWithCancellation finished!!!")
 	return dispatchRequest.state, nil
 }
 

@@ -29,6 +29,7 @@ import (
 	"github.com/docker/docker/builder/dockerfile/instructions"
 	"github.com/docker/docker/pkg/system"
 	"github.com/docker/docker/runconfig/opts"
+	"github.com/sirupsen/logrus"
 	"github.com/pkg/errors"
 )
 
@@ -62,6 +63,7 @@ func dispatch(d dispatchRequest, cmd instructions.Command) (err error) {
 			return
 		}
 	}()
+	logrus.Errorf("dispatch switch: %T", cmd)
 	switch c := cmd.(type) {
 	case *instructions.EnvCommand:
 		return dispatchEnv(d, c)
