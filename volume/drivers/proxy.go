@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/docker/docker/volume"
+	"github.com/sirupsen/logrus"
 )
 
 type client interface {
@@ -114,7 +115,7 @@ func (pp *volumeDriverProxy) Mount(name string, id string) (mountpoint string, e
 		req volumeDriverProxyMountRequest
 		ret volumeDriverProxyMountResponse
 	)
-
+	logrus.Errorf("Mount called in volumeDriverProxy")
 	req.Name = name
 	req.ID = id
 	if err = pp.Call("VolumeDriver.Mount", req, &ret); err != nil {

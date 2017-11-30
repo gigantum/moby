@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	mounttypes "github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/pkg/idtools"
 	"github.com/docker/docker/pkg/stringid"
@@ -151,6 +153,14 @@ func (m *MountPoint) Cleanup() error {
 // The, optional, checkFun parameter allows doing additional checking
 // before creating the source directory on the host.
 func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun func(m *MountPoint) error) (path string, err error) {
+	// errt := errors.Wrapf(fmt.Errorf("stack trace: "), "dummy")
+	// for _, f := range errt.StackTrace() {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"stack":    f,
+	// 		}).Error("Volume setup called")
+	// }
+	debug.PrintStack()
+	logrus.Error("volume setup called: ")
 	defer func() {
 		if err != nil || !label.RelabelNeeded(m.Mode) {
 			return
@@ -179,6 +189,7 @@ func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun f
 			id = stringid.GenerateNonCryptoID()
 		}
 		path, err := m.Volume.Mount(id)
+		logrus.Error("called volume.mount path: " + path)
 		if err != nil {
 			return "", errors.Wrapf(err, "error while mounting volume '%s'", m.Source)
 		}
