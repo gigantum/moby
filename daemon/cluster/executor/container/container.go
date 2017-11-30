@@ -264,6 +264,8 @@ func (c *containerConfig) mounts() []enginemount.Mount {
 }
 
 func convertMount(m api.Mount) enginemount.Mount {
+
+	logrus.Error("cluster.container convert mount called")
 	mount := enginemount.Mount{
 		Source:   m.Source,
 		Target:   m.Target,
@@ -399,6 +401,7 @@ func (c *containerConfig) hostConfig() *enginecontainer.HostConfig {
 
 // This handles the case of volumes that are defined inside a service Mount
 func (c *containerConfig) volumeCreateRequest(mount *api.Mount) *volumetypes.VolumesCreateBody {
+	logrus.Error("cluster.container volumeCreateRequest called")
 	var (
 		driverName string
 		driverOpts map[string]string
