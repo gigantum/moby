@@ -154,6 +154,7 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 
 		if bind.Type == mounttypes.TypeVolume {
 			// create the volume
+			logrus.Error("1. creating volume in registerMountPoints")
 			v, err := daemon.volumes.CreateWithRef(bind.Name, bind.Driver, container.ID, nil, nil)
 			if err != nil {
 				return err
@@ -189,8 +190,11 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 				if cfg.VolumeOptions.DriverConfig != nil {
 					driverOpts = cfg.VolumeOptions.DriverConfig.Options
 				}
+				// This is the one!!!
+				logrus.Error("2. creating volume in registerMountPoints")
 				v, err = daemon.volumes.CreateWithRef(mp.Name, mp.Driver, container.ID, driverOpts, cfg.VolumeOptions.Labels)
 			} else {
+				logrus.Error("3. creating volume in registerMountPoints")
 				v, err = daemon.volumes.CreateWithRef(mp.Name, mp.Driver, container.ID, nil, nil)
 			}
 			if err != nil {
