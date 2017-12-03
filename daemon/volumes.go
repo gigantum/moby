@@ -172,7 +172,7 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 		dereferenceIfExists(bind.Destination)
 		mountPoints[bind.Destination] = bind
 	}
-
+	logrus.Error("about to call parse mount spec")
 	for _, cfg := range hostConfig.Mounts {
 		mp, err := parser.ParseMountSpec(cfg)
 		if err != nil {
@@ -209,7 +209,13 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 			if cv, ok := v.(interface {
 				CachedPath() string
 			}); ok {
-				mp.Source = cv.CachedPath()
+				// This is where it set it!!
+				if cfg.VolumeOptions != nil && cfg.VolumeOptions.SubPath != "" {
+					logrus.Error("setting MountPoint source to " + cv.CachedPath() + cfg.VolumeOptions.SubPath)
+					mp.Source = cv.CachedPath() + cfg.VolumeOptions.SubPath
+				} else {
+					mp.Source = cv.CachedPath()
+				}
 			}
 			if mp.Driver == volume.DefaultDriverName {
 				setBindModeIfNull(mp)

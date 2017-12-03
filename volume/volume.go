@@ -153,12 +153,7 @@ func (m *MountPoint) Cleanup() error {
 // The, optional, checkFun parameter allows doing additional checking
 // before creating the source directory on the host.
 func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun func(m *MountPoint) error) (path string, err error) {
-	// errt := errors.Wrapf(fmt.Errorf("stack trace: "), "dummy")
-	// for _, f := range errt.StackTrace() {
-	// 	logrus.WithFields(logrus.Fields{
-	// 		"stack":    f,
-	// 		}).Error("Volume setup called")
-	// }
+
 	debug.PrintStack()
 	logrus.Error("volume setup called: ")
 	defer func() {
@@ -166,6 +161,14 @@ func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun f
 			return
 		}
 
+		// This creates new dirs when a supath is mentioned along with the volume.
+		// QUESTION: should I make sure to add only subpaths of  */<volume_name>/_data/?
+		if err := idtools.MkdirAllAndChownNew(m.Source, 0755, rootIDs); err != nil {
+			if err := checkFun(m); err != nil {
+				err = errors.Wrapf(err, "error creating SubPath of a volume %q", m.Source)
+				return
+			}
+		}
 		var sourcePath string
 		sourcePath, err = filepath.EvalSymlinks(m.Source)
 		if err != nil {
@@ -196,7 +199,7 @@ func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun f
 
 		m.ID = id
 		m.active++
-		return path, nil
+		return m.Source, nil
 	}
 
 	if len(m.Source) == 0 {
