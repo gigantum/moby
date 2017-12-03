@@ -282,7 +282,9 @@ func (p *linuxParser) parseMountSpec(cfg mount.Mount, validateBindSourceExists b
 	if err := p.validateMountConfigImpl(&cfg, validateBindSourceExists); err != nil {
 		return nil, err
 	}
-	logrus.Error("subpath is: " + cfg.VolumeOptions.SubPath)
+	if cfg.VolumeOptions != nil && cfg.VolumeOptions.SubPath != "" {
+		logrus.Error("subpath is: " + cfg.VolumeOptions.SubPath)
+	}
 	mp := &MountPoint{
 		RW:          !cfg.ReadOnly,
 		Destination: path.Clean(filepath.ToSlash(cfg.Target)),
