@@ -9,7 +9,6 @@ import (
 
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/pkg/stringid"
-	"github.com/sirupsen/logrus"
 )
 
 type linuxParser struct {
@@ -281,9 +280,6 @@ func (p *linuxParser) ParseMountSpec(cfg mount.Mount) (*MountPoint, error) {
 func (p *linuxParser) parseMountSpec(cfg mount.Mount, validateBindSourceExists bool) (*MountPoint, error) {
 	if err := p.validateMountConfigImpl(&cfg, validateBindSourceExists); err != nil {
 		return nil, err
-	}
-	if cfg.VolumeOptions != nil && cfg.VolumeOptions.SubPath != "" {
-		logrus.Error("subpath is: " + cfg.VolumeOptions.SubPath)
 	}
 	mp := &MountPoint{
 		RW:          !cfg.ReadOnly,

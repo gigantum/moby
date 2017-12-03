@@ -46,7 +46,6 @@ func (daemon *Daemon) createContainerOSSpecificSettings(container *container.Con
 			return fmt.Errorf("cannot mount volume over existing file, file exists %s", path)
 		}
 
-		logrus.Error("calling create volume from create_unix")
 		v, err := daemon.volumes.CreateWithRef(name, hostConfig.VolumeDriver, container.ID, nil, nil)
 		if err != nil {
 			return err

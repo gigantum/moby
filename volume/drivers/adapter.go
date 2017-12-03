@@ -159,14 +159,12 @@ func (a *volumeAdapter) CachedPath() string {
 }
 
 func (a *volumeAdapter) Mount(id string) (string, error) {
-	logrus.Error("in volume adapter mount")
 	mountpoint, err := a.proxy.Mount(a.name, id)
 	a.eMount = hostPath(a.baseHostPath, mountpoint)
 	return a.eMount, err
 }
 
 func (a *volumeAdapter) Unmount(id string) error {
-	logrus.Error("in volume adapter mount")
 	err := a.proxy.Unmount(a.name, id)
 	if err == nil {
 		a.eMount = ""

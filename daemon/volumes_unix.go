@@ -17,7 +17,6 @@ import (
 	"github.com/docker/docker/volume"
 	"github.com/docker/docker/volume/drivers"
 	"github.com/docker/docker/volume/local"
-	"github.com/sirupsen/logrus"
 	"github.com/pkg/errors"
 )
 
@@ -171,7 +170,6 @@ func (daemon *Daemon) verifyVolumesInfo(container *container.Container) error {
 
 			if strings.HasPrefix(hostPath, vfsPath) {
 				id := filepath.Base(hostPath)
-				logrus.Error("calling create volume from volumes_unix")
 				v, err := daemon.volumes.CreateWithRef(id, volume.DefaultDriverName, container.ID, nil, nil)
 				if err != nil {
 					return err

@@ -4,7 +4,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"runtime"
 	"sync"
 	"time"
@@ -271,8 +270,6 @@ func (s *VolumeStore) list() ([]volume.Volume, []string, error) {
 // CreateWithRef creates a volume with the given name and driver and stores the ref
 // This ensures there's no race between creating a volume and then storing a reference.
 func (s *VolumeStore) CreateWithRef(name, driverName, ref string, opts, labels map[string]string) (volume.Volume, error) {
-	logrus.Errorf("in volume create!!")
-	debug.PrintStack()
 	name = normalizeVolumeName(name)
 	s.locks.Lock(name)
 	defer s.locks.Unlock(name)
