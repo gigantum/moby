@@ -642,7 +642,7 @@ func (sb *sandbox) SetKey(basePath string) error {
 		// of the network resources gets destroyed during the move.
 		sb.releaseOSSbox()
 	}
-
+	logrus.Errorf("about to get osl sandbox in SetKey path: " + basePath + " key: " + sb.Key())
 	osSbox, err := osl.GetSandboxForExternalKey(basePath, sb.Key())
 	if err != nil {
 		return err

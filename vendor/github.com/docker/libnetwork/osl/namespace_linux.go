@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"bytes"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -51,6 +53,7 @@ type networkNamespace struct {
 	nextIfIndex  map[string]int
 	isDefault    bool
 	nlHandle     *netlink.Handle
+	nlFirewallHandle *netlink.Handle
 	loV6Enabled  bool
 	sync.Mutex
 }
@@ -194,6 +197,7 @@ func GenerateKey(containerID string) string {
 // NewSandbox provides a new sandbox instance created in an os specific way
 // provided a key which uniquely identifies the sandbox
 func NewSandbox(key string, osCreate, isRestore bool) (Sandbox, error) {
+	logrus.Error("in namespace_linux New Sandbox")
 	if !isRestore {
 		err := createNetworkNamespace(key, osCreate)
 		if err != nil {
@@ -258,6 +262,36 @@ func GetSandboxForExternalKey(basePath string, key string) (Sandbox, error) {
 	if err := mountNetworkNamespace(basePath, key); err != nil {
 		return nil, err
 	}
+
+	if err := os.MkdirAll("/var/run/netns", 0777); err != nil {
+		return nil, err
+	}
+
+	if _, err := os.Create("/var/run/netns/temp"); err != nil {
+		return nil, err
+	}
+	if err := mountNetworkNamespace(basePath, "/var/run/netns/temp"); err != nil {
+		return nil, err
+	}
+
+	// cmd := &exec.Cmd{
+	// 	Path:   reexec.Self(),
+	// 	Args:   append([]string{"netns-create"}, path),
+	// 	Stdout: os.Stdout,
+	// 	Stderr: os.Stderr,
+	// }
+	// cmdText := "ip netns exec temp"
+	createFW := "vendor/github.com/docker/libnetwork/osl/createFirewall.sh"
+	cmd := exec.Command("/bin/sh", createFW)
+	// , "bash", "-c", " \"iptables -A OUTPUT -p tcp --dport 5050 -j REJECT\" "
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("ip netns command failed: %v", err)
+	}
+	logrus.Error("cmd output: " + out.String())
+
 	n := &networkNamespace{path: key, nextIfIndex: make(map[string]int)}
 
 	sboxNs, err := netns.GetFromPath(n.path)
@@ -269,6 +303,10 @@ func GetSandboxForExternalKey(basePath string, key string) (Sandbox, error) {
 	n.nlHandle, err = netlink.NewHandleAt(sboxNs, syscall.NETLINK_ROUTE)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a netlink handle: %v", err)
+	}
+	n.nlFirewallHandle, err = netlink.NewHandleAt(sboxNs, syscall.NETLINK_NETFILTER)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a netlink firewall handle: %v", err)
 	}
 
 	err = n.nlHandle.SetSocketTimeout(ns.NetlinkSocketsTimeout)
@@ -303,7 +341,8 @@ func createNetworkNamespace(path string, osCreate bool) error {
 	if err := createNamespaceFile(path); err != nil {
 		return err
 	}
-
+	logrus.Errorf("in create net ns. path:  " + path)
+	debug.PrintStack()
 	cmd := &exec.Cmd{
 		Path:   reexec.Self(),
 		Args:   append([]string{"netns-create"}, path),
