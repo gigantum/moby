@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"encoding/json"
 	"fmt"
-	"runtime/debug"
 	"net"
 	"strings"
 	"sync"
@@ -323,9 +322,7 @@ func (sb *sandbox) Refresh(options ...SandboxOption) error {
 }
 
 func (sb *sandbox) SetOutboundFirewall(proto string, port string) error {
-
-	//TODO: add validation
-
+	// no need for validation because iptables does it underneath
 	sb.proto = proto
 	sb.port = port
 
@@ -657,14 +654,13 @@ func (sb *sandbox) SetKey(basePath string) error {
 		// of the network resources gets destroyed during the move.
 		sb.releaseOSSbox()
 	}
-	debug.PrintStack()
-	logrus.Errorf("about to get osl sandbox in SetKey path: " + basePath + " key: " + sb.Key())
 	osSbox, err := osl.GetSandboxForExternalKey(basePath, sb.Key())
 	if err != nil {
 		return err
 	}
-	if sb.port != "" || sb.proto != "" {
-		logrus.Errorf("entering osl firewall setting")
+	// Currently we only support the firewall when both the port and protocol are mentioned
+	// TODO: make this extensible
+	if sb.port != "" && sb.proto != "" {
 		err := osSbox.SetOutboundFirewall(sb.proto, sb.port)
 		if err != nil {
 			return err

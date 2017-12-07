@@ -260,7 +260,7 @@ func (n *networkNamespace) SetOutboundFirewall(proto string, port string) error 
 	if _, err := os.Create("/var/run/netns/temp"); err != nil {
 		return err
 	}
-	logrus.Error("setting proto port to: " + proto + ":" + port)
+
 	if err := syscall.Mount(n.Key(), "/var/run/netns/temp", "bind", syscall.MS_BIND, ""); err != nil {
 		return err
 	}

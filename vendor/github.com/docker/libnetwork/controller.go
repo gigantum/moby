@@ -1040,7 +1040,6 @@ func (c *controller) NetworkByID(id string) (Network, error) {
 
 // NewSandbox creates a new sandbox for the passed container id
 func (c *controller) NewSandbox(containerID string, options ...SandboxOption) (Sandbox, error) {
-	logrus.Error("in controller New Sandbox")
 	if containerID == "" {
 		return nil, types.BadRequestErrorf("invalid container ID")
 	}

@@ -493,8 +493,6 @@ func (daemon *Daemon) updateContainerNetworkSettings(container *container.Contai
 }
 
 func (daemon *Daemon) allocateNetwork(container *container.Container) error {
-	logrus.Errorf("in daemon allocate network")
-
 	start := time.Now()
 	controller := daemon.netController
 
@@ -557,7 +555,6 @@ func (daemon *Daemon) allocateNetwork(container *container.Container) error {
 			if err != nil {
 				return err
 			}
-			logrus.Errorf("calling for new Sandbox")
 			sb, err := daemon.netController.NewSandbox(container.ID, options...)
 			if err != nil {
 				return err
@@ -569,7 +566,6 @@ func (daemon *Daemon) allocateNetwork(container *container.Container) error {
 				}
 			}()
 		}
-		logrus.Errorf("new Sandbox not needed")
 	}
 
 	if _, err := container.WriteHostConfig(); err != nil {
@@ -686,7 +682,6 @@ func (daemon *Daemon) updateNetworkConfig(container *container.Container, n libn
 }
 
 func (daemon *Daemon) connectToNetwork(container *container.Container, idOrName string, endpointConfig *networktypes.EndpointSettings, updateSettings bool) (err error) {
-	logrus.Errorf("in connect to network")
 	start := time.Now()
 	if container.HostConfig.NetworkMode.IsContainer() {
 		return runconfig.ErrConflictSharedNetwork
@@ -765,13 +760,10 @@ func (daemon *Daemon) connectToNetwork(container *container.Container, idOrName 
 		if err != nil {
 			return err
 		}
-		logrus.Errorf("sb nil. creating new one")
 		sb, err = controller.NewSandbox(container.ID, options...)
 		if err != nil {
 			return err
 		}
-		logrus.Errorf("sb path is: " + sb.Key())
-		// logrus.Errorf("sb info is: " + sb.Info().Gateway())
 		container.UpdateSandboxNetworkSettings(sb)
 	}
 
