@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"bytes"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -253,6 +252,30 @@ func mountNetworkNamespace(basePath string, lnPath string) error {
 	return syscall.Mount(basePath, lnPath, "bind", syscall.MS_BIND, "")
 }
 
+func (n *networkNamespace) SetOutboundFirewall(proto string, port string) error {
+	if err := os.MkdirAll("/var/run/netns", 0777); err != nil {
+		return err
+	}
+
+	if _, err := os.Create("/var/run/netns/temp"); err != nil {
+		return err
+	}
+	logrus.Error("setting proto port to: " + proto + ":" + port)
+	if err := syscall.Mount(n.Key(), "/var/run/netns/temp", "bind", syscall.MS_BIND, ""); err != nil {
+		return err
+	}
+
+	createFW := "vendor/github.com/docker/libnetwork/createFirewall.sh"
+	cmd := exec.Command("/bin/sh", createFW, proto, port)
+	// , "bash", "-c", " \"iptables -A OUTPUT -p tcp --dport 5050 -j REJECT\" "
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("ip netns command failed: %v", err)
+	}
+
+	return nil
+}
+
 // GetSandboxForExternalKey returns sandbox object for the supplied path
 func GetSandboxForExternalKey(basePath string, key string) (Sandbox, error) {
 	if err := createNamespaceFile(key); err != nil {
@@ -263,34 +286,27 @@ func GetSandboxForExternalKey(basePath string, key string) (Sandbox, error) {
 		return nil, err
 	}
 
-	if err := os.MkdirAll("/var/run/netns", 0777); err != nil {
-		return nil, err
-	}
-
-	if _, err := os.Create("/var/run/netns/temp"); err != nil {
-		return nil, err
-	}
-	if err := mountNetworkNamespace(basePath, "/var/run/netns/temp"); err != nil {
-		return nil, err
-	}
-
-	// cmd := &exec.Cmd{
-	// 	Path:   reexec.Self(),
-	// 	Args:   append([]string{"netns-create"}, path),
-	// 	Stdout: os.Stdout,
-	// 	Stderr: os.Stderr,
+	// if err := os.MkdirAll("/var/run/netns", 0777); err != nil {
+	// 	return nil, err
 	// }
-	// cmdText := "ip netns exec temp"
-	createFW := "vendor/github.com/docker/libnetwork/osl/createFirewall.sh"
-	cmd := exec.Command("/bin/sh", createFW)
-	// , "bash", "-c", " \"iptables -A OUTPUT -p tcp --dport 5050 -j REJECT\" "
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("ip netns command failed: %v", err)
-	}
-	logrus.Error("cmd output: " + out.String())
+	//
+	// if _, err := os.Create("/var/run/netns/temp"); err != nil {
+	// 	return nil, err
+	// }
+	// if err := mountNetworkNamespace(key, "/var/run/netns/temp"); err != nil {
+	// 	return nil, err
+	// }
+	//
+	// createFW := "vendor/github.com/docker/libnetwork/osl/createFirewall.sh"
+	// cmd := exec.Command("/bin/sh", createFW)
+	// // , "bash", "-c", " \"iptables -A OUTPUT -p tcp --dport 5050 -j REJECT\" "
+	// var out bytes.Buffer
+	// cmd.Stdout = &out
+	//
+	// if err := cmd.Run(); err != nil {
+	// 	return nil, fmt.Errorf("ip netns command failed: %v", err)
+	// }
+	// logrus.Error("cmd output: " + out.String())
 
 	n := &networkNamespace{path: key, nextIfIndex: make(map[string]int)}
 

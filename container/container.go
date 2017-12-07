@@ -692,10 +692,12 @@ func (container *Container) UpdateJoinInfo(n named, ep libnetwork.Endpoint) erro
 	return nil
 }
 
-// UpdateSandboxNetworkSettings updates the sandbox ID and Key.
+// UpdateSandboxNetworkSettings updates the sandbox ID, Key and sets the firewall.
 func (container *Container) UpdateSandboxNetworkSettings(sb libnetwork.Sandbox) error {
 	container.NetworkSettings.SandboxID = sb.ID()
 	container.NetworkSettings.SandboxKey = sb.Key()
+	proto_port := strings.Split(container.Config.Firewall, ":")
+	sb.SetOutboundFirewall(proto_port[0], proto_port[1])
 	return nil
 }
 

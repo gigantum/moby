@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
 	"net"
 	"strings"
 	"sync"
@@ -48,6 +49,8 @@ type Sandbox interface {
 	// DisableService removes a managed container's endpoints from the load balancer
 	// and service discovery
 	DisableService() error
+	// Block particular destination ports and protocols in a container's network stack
+	SetOutboundFirewall(proto string, port string) error
 }
 
 // SandboxOption is an option setter function type used to pass various options to
@@ -85,6 +88,8 @@ type sandbox struct {
 	inDelete           bool
 	ingress            bool
 	ndotsSet           bool
+	proto							 string
+	port							 string
 	sync.Mutex
 	// This mutex is used to serialize service related operation for an endpoint
 	// The lock is here because the endpoint is saved into the store so is not unique
@@ -313,6 +318,16 @@ func (sb *sandbox) Refresh(options ...SandboxOption) error {
 			logrus.Warnf("Failed attach sandbox %s to endpoint %s: %v\n", sb.ID(), ep.ID(), err)
 		}
 	}
+
+	return nil
+}
+
+func (sb *sandbox) SetOutboundFirewall(proto string, port string) error {
+
+	//TODO: add validation
+
+	sb.proto = proto
+	sb.port = port
 
 	return nil
 }
@@ -642,10 +657,18 @@ func (sb *sandbox) SetKey(basePath string) error {
 		// of the network resources gets destroyed during the move.
 		sb.releaseOSSbox()
 	}
+	debug.PrintStack()
 	logrus.Errorf("about to get osl sandbox in SetKey path: " + basePath + " key: " + sb.Key())
 	osSbox, err := osl.GetSandboxForExternalKey(basePath, sb.Key())
 	if err != nil {
 		return err
+	}
+	if sb.port != "" || sb.proto != "" {
+		logrus.Errorf("entering osl firewall setting")
+		err := osSbox.SetOutboundFirewall(sb.proto, sb.port)
+		if err != nil {
+			return err
+		}
 	}
 
 	sb.Lock()

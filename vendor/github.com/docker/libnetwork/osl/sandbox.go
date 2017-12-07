@@ -65,6 +65,9 @@ type Sandbox interface {
 	// Destroy the sandbox
 	Destroy() error
 
+	// Set outbound firewall
+	SetOutboundFirewall(proto string, port string) error
+
 	// restore sandbox
 	Restore(ifsopt map[string][]IfaceOption, routes []*types.StaticRoute, gw net.IP, gw6 net.IP) error
 }
