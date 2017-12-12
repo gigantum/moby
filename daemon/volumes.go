@@ -171,6 +171,7 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 		dereferenceIfExists(bind.Destination)
 		mountPoints[bind.Destination] = bind
 	}
+	
 	for _, cfg := range hostConfig.Mounts {
 		mp, err := parser.ParseMountSpec(cfg)
 		if err != nil {
