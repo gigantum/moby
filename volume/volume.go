@@ -156,12 +156,6 @@ func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun f
 			return
 		}
 
-		// This creates new dirs when a supath is mentioned along with the volume.
-		// QUESTION: should I make sure to add only subpaths of  */<volume_name>/_data/?
-		if err := idtools.MkdirAllAndChownNew(m.Source, 0755, rootIDs); err != nil {
-			err = errors.Wrapf(err, "error creating SubPath of a volume %q", m.Source)
-			return
-		}
 		var sourcePath string
 		sourcePath, err = filepath.EvalSymlinks(m.Source)
 		if err != nil {
@@ -180,6 +174,11 @@ func (m *MountPoint) Setup(mountLabel string, rootIDs idtools.IDPair, checkFun f
 	}()
 
 	if m.Volume != nil {
+		// This creates new dirs when a supath is mentioned along with the volume.
+		if err := idtools.MkdirAllAndChownNew(m.Source, 0755, rootIDs); err != nil {
+			return "", errors.Wrapf(err, "error creating SubPath of a volume %q", m.Source)
+		}
+
 		id := m.ID
 		if id == "" {
 			id = stringid.GenerateNonCryptoID()

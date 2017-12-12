@@ -48,6 +48,15 @@ func TestBackportMountSpec(t *testing.T) {
 				Name:        "data",
 				Spec:        mounttypes.Mount{Type: mounttypes.TypeVolume, Target: "/jambolan", Source: "data"},
 			},
+
+			// testing volume subpath as mentioned in #32582
+			"/mango": {
+				Type:        mounttypes.TypeVolume,
+				Destination: "/honeydew",
+				Name:        "data",
+				Source:      "/var/lib/docker/volumes/data",
+				Spec:        mounttypes.Mount{Type: mounttypes.TypeVolume, Target: "/mango", VolumeOptions: &mounttypes.VolumeOptions{NoCopy: true, Subpath: "ripe"}},
+			}
 		},
 		HostConfig: &containertypes.HostConfig{
 			Binds: []string{
@@ -244,6 +253,22 @@ func TestBackportMountSpec(t *testing.T) {
 			},
 			comment: "partially configured named volume caused by #32613",
 		},
+		{
+			mp: &volume.MountPoint{
+				Type:        mounttypes.TypeVolume,
+				Destination: "/honeydew",
+				Source:      "/var/lib/docker/volumes/data/ripe",
+				RW:          true,
+				Propagation: "shared",
+				Spec: mounttypes.Mount{
+					Type:          mounttypes.TypeVolume,
+					Source:        "data",
+					Target:        "/honeydew",
+					VolumeOptions: &mounttypes.VolumeOptions{NoCopy: true, Subpath: "ripe"},
+				},
+			},
+			comment: "testing volume subpath as mentioned in #32582",
+		}
 	} {
 
 		mp := c.MountPoints[x.mp.Destination]
