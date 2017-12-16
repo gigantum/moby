@@ -541,7 +541,6 @@ func (daemon *Daemon) allocateNetwork(container *container.Container) error {
 
 	for netName, epConf := range networks {
 		cleanOperationalData(epConf)
-		logrus.Errorf("connecting to network: " + netName)
 		if err := daemon.connectToNetwork(container, netName, epConf.EndpointSettings, updateSettings); err != nil {
 			return err
 		}
@@ -566,6 +565,7 @@ func (daemon *Daemon) allocateNetwork(container *container.Container) error {
 				}
 			}()
 		}
+
 	}
 
 	if _, err := container.WriteHostConfig(); err != nil {
@@ -764,6 +764,7 @@ func (daemon *Daemon) connectToNetwork(container *container.Container, idOrName 
 		if err != nil {
 			return err
 		}
+
 		container.UpdateSandboxNetworkSettings(sb)
 	}
 

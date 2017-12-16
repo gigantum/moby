@@ -109,12 +109,6 @@ func (h *Handle) ConntrackDeleteFilter(table ConntrackTableType, family InetFami
 	return matched, nil
 }
 
-// ConntrackDeleteFilter deletes entries on the specified table on the base of the filter using the netlink handle passed
-// conntrack -D [table] parameters         Delete conntrack or expectation
-// func (h *Handle) FirewallAdd(table ConntrackTableType, family InetFamily, filter *ConntrackFilter) (uint, error) {
-// 	res = h.newNetlinkRequest()
-// }
-
 func (h *Handle) newConntrackRequest(table ConntrackTableType, family InetFamily, operation, flags int) *nl.NetlinkRequest {
 	// Create the Netlink request object
 	req := h.newNetlinkRequest((int(table)<<8)|operation, flags)

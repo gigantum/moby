@@ -49,7 +49,6 @@ import (
 	"net"
 	"path/filepath"
 	"strings"
-	"strconv"
 	"sync"
 	"time"
 
@@ -1059,7 +1058,6 @@ func (c *controller) NewSandbox(containerID string, options ...SandboxOption) (S
 			// store. Make use of it so that we don't lose
 			// the endpoints from store but reset the
 			// isStub flag.
-			logrus.Error("we already have a sandbox?")
 			sb = s
 			sb.isStub = false
 			break
@@ -1116,7 +1114,6 @@ func (c *controller) NewSandbox(containerID string, options ...SandboxOption) (S
 
 	if sb.config.useDefaultSandBox {
 		c.sboxOnce.Do(func() {
-			logrus.Error("using default sandbox")
 			c.defOsSbox, err = osl.NewSandbox(sb.Key(), false, false)
 		})
 
@@ -1129,7 +1126,6 @@ func (c *controller) NewSandbox(containerID string, options ...SandboxOption) (S
 	}
 
 	if sb.osSbox == nil && !sb.config.useExternalKey {
-		logrus.Error("using custom sandbox? param: " + strconv.FormatBool(!sb.config.useDefaultSandBox))
 		if sb.osSbox, err = osl.NewSandbox(sb.Key(), !sb.config.useDefaultSandBox, false); err != nil {
 			return nil, fmt.Errorf("failed to create new osl sandbox: %v", err)
 		}
