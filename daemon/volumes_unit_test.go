@@ -4,6 +4,9 @@ import (
 	"runtime"
 	"testing"
 
+	containertypes "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/container"
 	"github.com/docker/docker/volume"
 )
 
@@ -38,5 +41,33 @@ func TestParseVolumesFrom(t *testing.T) {
 		if mode != c.expMode {
 			t.Fatalf("Expected mode %s, was %s for spec %s\n", c.expMode, mode, c.spec)
 		}
+	}
+}
+
+func TestMountSubdir(t *testing.T) {
+	d := Daemon{containers: container.NewMemoryStore()}
+	mountSubdir := mount.Mount{
+		mount.TypeVolume,
+		"check",
+		"check2",
+		false,
+		mount.ConsistencyDelegated,
+		nil,
+		&mount.VolumeOptions{
+			Subpath: "test",
+		},
+		nil,
+	}
+	container := container.Container{}
+	hostConfig := containertypes.HostConfig{
+		Mounts: []mount.Mount{
+			mountSubdir,
+		},
+	}
+
+	err := d.registerMountPoints(&container, &hostConfig)
+
+	if err != nil {
+		t.Fatalf("unexpected error")
 	}
 }

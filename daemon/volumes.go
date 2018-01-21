@@ -171,7 +171,7 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 		dereferenceIfExists(bind.Destination)
 		mountPoints[bind.Destination] = bind
 	}
-	
+
 	for _, cfg := range hostConfig.Mounts {
 		mp, err := parser.ParseMountSpec(cfg)
 		if err != nil {
@@ -205,9 +205,8 @@ func (daemon *Daemon) registerMountPoints(container *container.Container, hostCo
 			if cv, ok := v.(interface {
 				CachedPath() string
 			}); ok {
-				if cfg.VolumeOptions != nil && cfg.VolumeOptions.SubPath != "" {
-					logrus.Error("setting MountPoint source to " + cv.CachedPath() + cfg.VolumeOptions.SubPath)
-					mp.Source = cv.CachedPath() + cfg.VolumeOptions.SubPath
+				if cfg.VolumeOptions != nil && cfg.VolumeOptions.Subpath != "" {
+					mp.Source = cv.CachedPath() + cfg.VolumeOptions.Subpath
 				} else {
 					mp.Source = cv.CachedPath()
 				}
